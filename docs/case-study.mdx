@@ -16,7 +16,9 @@ import HeaderLine from '@site/src/components/HeaderLine.tsx';
 
 Symphony is an open source framework designed to make it easy for developers to build collaborative web applications. Symphony handles the complexities of implementing collaboration, including conflict resolution and real-time infrastructure, freeing developers to focus on creating unique and engaging features for their applications.
 
-![Symphony Collaboration](/img/gifs/symphony.gif)
+<video loop="true" autoplay="true" playsinline="true" muted="true" class="max-w-full">
+  <source src="/img/symphony.mp4" type="video/mp4"></source>
+</video>
 
 In this case study, we’ll discuss the challenges that arise when building collaborative experiences on the web, the limitations of traditional approaches in solving these problems, and how we designed Symphony to overcome them.
 
@@ -89,14 +91,13 @@ We can concretely demonstrate how conflict arises using the following examples.
 
 Suppose that two users, Alice and Bob, are using a collaborative whiteboard. Bob changes a square shape to a circle whilst at the same time, Alice changes the square to a triangle.
 
-<video loop autoplay="true" playsinline class="max-w-full">
+<video loop="true" autoplay="true" playsinline="true" muted="true" class="max-w-full">
   <source src="/img/case-study/whiteboard-conflict.mp4" type="video/mp4"></source>
 </video>
 
-
 Or suppose that Alice and Bob are collaborating on a text document. Suddenly, Bob disconnects but Alice continued editing, overwriting earlier content. When Bob reconnects, the two states have diverged.
 
-<video loop autoplay="true"  class="max-w-full">
+<video loop="true" autoplay="true" playsinline="true" muted="true" class="max-w-full">
   <source src="/img/case-study/text-editor-conflict.mp4" type="video/mp4"></source>
 </video>
 
