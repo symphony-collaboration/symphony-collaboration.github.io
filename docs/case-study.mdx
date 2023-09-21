@@ -5,6 +5,13 @@ description: Symphony Technical Case Study - Challenges, System Design, and Engi
 
 import HeaderLine from '@site/src/components/HeaderLine.tsx';
 
+
+<script>
+
+  console.log('hello this')
+
+</script>
+
 # Case Study
 
 <HeaderLine />
@@ -16,7 +23,7 @@ import HeaderLine from '@site/src/components/HeaderLine.tsx';
 
 Symphony is an open source framework designed to make it easy for developers to build collaborative web applications. Symphony handles the complexities of implementing collaboration, including conflict resolution and real-time infrastructure, freeing developers to focus on creating unique and engaging features for their applications.
 
-<video loop="true" autoplay="true" playsinline="true" muted="true" class="max-w-full">
+<video loop={true} playsInline={true} muted={true} autoPlay={true} className="max-w-full">
   <source src="/img/symphony.mp4" type="video/mp4"></source>
 </video>
 
@@ -24,13 +31,13 @@ In this case study, we’ll discuss the challenges that arise when building coll
 
 ## Collaboration
 
-Real-time collaboration, where multiple users can concurrently work together on a common task, has been a notable feature since the earliest days of the internet. It’s origin can be traced back to the 1960s, when Douglas Engelbart in his famous [‘Mother of All Demos’](http://google.com), demonstrated the first real-time collaborative editor, built on the oN-Line System (NLS), that allowed users to create and edit documents, link them together, and share them with others.
+Real-time collaboration, where multiple users can concurrently work together on a common task, has been a notable feature since the earliest days of the internet. It’s origin can be traced back to the 1960s, when Douglas Engelbart in his famous *Mother of All Demos*, demonstrated the first real-time collaborative editor, built on the oN-Line System (NLS), that allowed users to create and edit documents, link them together, and share them with others.[^1]
 
 However, for much of the web’s history, the majority of applications have notably been non-collaborative. Without the ability to work together on a common task in real-time, users have to instead enter into a tedious cycle of changing, exporting, and manually syncing or emailing copies of files.
 
 ![Modify-Export-Send feedback loop](/img/case-study/feedback-loop.png)
 
-This slow feedback loop harms productivity [ref]. In other words, this workflow is sub-optimal and restrictive.
+This slow feedback loop harms productivity.[^2] In other words, this workflow is sub-optimal and restrictive.
 
 With the rise of remote work where users are geographically separated, the need to improve this workflow has become even more acute.
 
@@ -65,11 +72,11 @@ In response, new web protocols were developed to help facilitate this. Two of th
 
 #### WebRTC
 
-Web Real-Time Communication (WebRTC) is an open-source technology that enables real-time communication between web browsers over the internet. The protocol uses a combination of JavaScript APIs and peer-to-peer networking to establish direct communication channels between browsers, without the need for a permanent, central server. UDP is used as the primary transport protocol for real-time data transmission. This makes WebRTC an especially attractive choice for collaborative applications that require very low-latency communication at the expense of reduced reliability and error correction, such as video conferencing, online gaming, and live streaming.
+Web Real-Time Communication (WebRTC) is an open-source technology that enables real-time communication between web browsers over the internet.[^3] The protocol uses a combination of JavaScript APIs and peer-to-peer networking to establish direct communication channels between browsers, without the need for a permanent, central server. UDP is used as the primary transport protocol for real-time data transmission. This makes WebRTC an especially attractive choice for collaborative applications that require very low-latency communication at the expense of reduced reliability and error correction, such as video conferencing, online gaming, and live streaming.
 
 #### WebSocket
 
-WebSocket is a web protocol that provides a persistent, bi-directional communication channel between a client and a server over a single, long-lived TCP connection. The connection is established via a handshake between client and server. Since TCP is used as the primary transport protocol, WebSocket is a suitable choice for collaborative applications that require stronger guarantees on the reliability and security of the communication channel at the expense of higher latency, such as real-time dashboards, stock price tickers, and live chat.
+WebSocket is a web protocol that provides a persistent, bi-directional communication channel between a client and a server over a single, long-lived TCP connection.[^4] The connection is established via a handshake between client and server. Since TCP is used as the primary transport protocol, WebSocket is a suitable choice for collaborative applications that require stronger guarantees on the reliability and security of the communication channel at the expense of higher latency, such as real-time dashboards, stock price tickers, and live chat.
 
 Using technologies such as WebRTC and WebSocket, clients and/or servers are able to maintain persistent, stateful communication channels, no longer bound by the limits of the request-response cycle. As such, it permitted the development of so-called real-time applications to be built, where state updates are *perceived* to be received instantaneously without page refresh.
 
@@ -89,15 +96,15 @@ For example, multiple users working on a shared task or document may make change
 
 We can concretely demonstrate how conflict arises using the following examples.
 
-Suppose that two users, Alice and Bob, are using a collaborative whiteboard. Bob changes a square shape to a circle whilst at the same time, Alice changes the square to a triangle.
+<!-- Suppose that two users, Alice and Bob, are using a collaborative whiteboard. Bob changes the colour of the circle to green whilst at the same time, Alice changes the square to a triangle.
 
 <video loop="true" autoplay="true" playsinline="true" muted="true" class="max-w-full">
   <source src="/img/case-study/whiteboard-conflict.mp4" type="video/mp4"></source>
-</video>
+</video> -->
 
-Or suppose that Alice and Bob are collaborating on a text document. Suddenly, Bob disconnects but Alice continued editing, overwriting earlier content. When Bob reconnects, the two states have diverged.
+Suppose that Alice and Bob are collaborating on a text document, when both Bob and Alice attempt to write at the same spot:
 
-<video loop="true" autoplay="true" playsinline="true" muted="true" class="max-w-full">
+<video loop={true} playsInline={true} muted={true} autoPlay={true} className="max-w-full">
   <source src="/img/case-study/text-editor-conflict.mp4" type="video/mp4"></source>
 </video>
 
@@ -107,9 +114,9 @@ When conflicts arise, Alice and Bob’s modifications can be seen as branching o
 
 For a collaborative application, we need a method of reconciling such conflicts and enforcing distributed consistency across clients.
 
-<figure class="mb-5">
+<figure className="mb-5">
   <img src="/img/case-study/merge.png" alt="merging" />
-  <figcaption class="italic">The role of a conflict resolution mechanism is to merge branches in a deterministic way, until all branches have converged to a single, consistent state that all parties agree upon.</figcaption>
+  <figcaption className="italic">The role of a conflict resolution mechanism is to merge branches in a deterministic way, until all branches have converged to a single, consistent state that all parties agree upon.</figcaption>
 </figure>
 
 In other words, after applying all user state changes, the application should deterministically converge to an eventually consistent state across the whole system that all parties agree upon.
@@ -130,7 +137,7 @@ For real-time, *synchronous* collaboration, more advanced conflict resolution me
 
 #### Operational Transformation (OT)
 
-One possible approach is to use the operational transformation (OT) algorithm, famously used by Google Docs [ref].
+One possible approach is to use the operational transformation (OT) algorithm, famously used by Google Docs [^5].
 
 OT represent each user’s edits as a sequence of operations that can be applied to the shared application state. For example, in the case of a collaborative text editor, where the sequence of characters is zero-indexed, the operation to insert the character `'a'` at the beginning of the first sentence may be represented as `insert('a', 0)`.
 
@@ -159,7 +166,7 @@ The complexity of OT led researchers to find alternatives, the most promising of
 
 #### Conflict Free Replicated Data Types (CRDTs)
 
-A conflict-free replicated data type (CRDT) is an abstract data type designed to be replicated at multiple processes. By definition, CRDTs have the following properties:
+A conflict-free replicated data type (CRDT) is an abstract data type designed to be replicated at multiple processes.[^6] By definition, CRDTs have the following properties:
 
 - **Independent-** Any replica can be modified without coordinating with other replicas.
 - **Strongly eventually consistent-** When any two replicas have received the same set of updates (in any order), the mathematical properties of CRDTs guarantee that both replicas will deterministically converge to the same state [footnote- explain what these mathematical properties are].
@@ -168,9 +175,7 @@ By imposing these mathematical properties on the CRDT and it’s associated algo
 
 The advantage of CRDTs is that they are guaranteed to be conflict-free, as long as the required mathematical properties are imposed. Since these mathematical properties are well-defined, it is easier to prove the correctness of a CRDT than any corresponding OT implementation. Further, since each replica is independent and that CRDTs make no assumption about the network topology, CRDTS are partition tolerant by default and can be used in a variety of network topologies including client-server and P2P. This property also means they are offline-capable by default.
 
-However, the mathematical constraints of CRDTs, in particular that operations should be commutative adds some unavoidable overhead. Most commonly-used data structures do not have commutative operations by default. For example, the `add` and `remove` operations of a Set are not naturally commutative. To ensure commutativity, the CRDT must retain additional metadata.
-
-[MAYBE NEED CLEARER EXPLANATION OR DIAGRAM]
+However, the mathematical constraints of CRDTs, in particular that operations should be commutative adds some unavoidable overhead. Most commonly-used data structures do not have commutative operations by default. For example, the `add` and `remove` operations of a Set are not naturally commutative. To ensure commutativity, the CRDT must retain additional metadata.[^7]
 
 For example, in the case of the `add` and `remove` operations of a Set, tombstones are typically used as placeholders for removed entries- if a replica receives a `remove` operation for an element before it receives the `add` operation that actually added the element, the tombstone ensures that the `remove` operation is still correctly processed. Since the metadata must be retained for the required mathematical properties to be upheld, the use of CRDTs inevitably results in additional memory overhead, which can become significant for large state. As noted by Jospeh Gentle:
 
@@ -183,7 +188,7 @@ While recent research has sought to introduce garbage-collection methods to redu
 
 Whilst OT and CRDTs represent the most popular approaches to conflict-resolution, the complexity of OT and the memory overhead of CRDTs can sometimes be unacceptable for certain use-cases. As such, some choose to create custom, proprietary data models that are inspired by the OT and CRDT approaches and are highly specialised to a particular use-case.
 
-For example, Figma relax many of the constraints imposed by CRDTs by adopting much simpler conflict-resolution semantics. In particular, they use simple last-write wins semantics when two clients try to modify a value of a Figma object concurrently. This works great for Figma objects where changes are mutually exclusive i.e. a single value must be chosen, but would fail if used for text editing. In Figma’s case, this was a valid tradeoff for their use case but would not be a suitable model for other applications.
+For example, Figma relax many of the constraints imposed by CRDTs by adopting much simpler conflict-resolution semantics. In particular, they use simple last-write wins semantics when two clients try to modify a value of a Figma object concurrently. This works great for Figma objects where changes are mutually exclusive i.e. a single value must be chosen, but would fail if used for text editing. In Figma’s case, this was a valid tradeoff for their use case but would not be a suitable model for other applications.[^8]
 
 The advantage of implementing a custom conflict-free data model is that the mechanism can be made highly-specialised to the target use-case. This can mean that many of the constraints that come with OT and CRDTs can be relaxed which may result in a simpler and efficient data representation. However, developing a custom model can be potentially risky since it requires a number of assumptions to be made about the use-case. In Figma’s case, for example, introducing text-editing may require significant changes to their current conflict-resolution semantics.
 
@@ -215,13 +220,13 @@ As a result, solutions have started to emerge that lower this barrier.
 
 Existing solutions typically fall into two categories: DIY solutions and commercial solutions.
 
-#### DIY Solutions (may not include as it seems similar to prev. section
+#### DIY Solutions
 
 For organisations who have complex, specialised requirements for their collaborative functionality or want to tightly integrate with existing infrastructure, a DIY solution might be the best fit. This involves manually synthesising the various components required for a real-time collaborative application.
 
 There are numerous open-source libraries providing implementations of popular conflict-resolution algorithms- teams would likely need to research, choose, and integrate the solution that best fits their use case. Alternatively, a bespoke solution may be best suited for highly specialised applications.
 
-For the real-time network and persistence layer which handles the propagation of updates to collaborating clients and/or server(s) and storing of state, one could use a backend-as-a-service such as Ably, Pusher, or PubNub or provision a custom implementation using open-source libraries like ws or PeerJS on cloud infrastructure.
+For the real-time network and persistence layer which handles the propagation of updates to collaborating clients and/or server(s) and storing of state, one could use a backend-as-a-service such as [Ably](https://ably.com/), [Pusher](https://pusher.com/), or [PubNub](https://www.pubnub.com/) or provision a custom implementation using open-source libraries like ws or [PeerJS](https://peerjs.com/) on cloud infrastructure.
 
 Whilst the DIY approach offers a high degree of customisation, it does require developers to have a high-level of proficiency in the relevant technologies. Thus, less experienced teams might reach for a Software-as-a-Service (SaaS) product to help manage their collaborative functionality needs.
 
@@ -229,9 +234,9 @@ Whilst the DIY approach offers a high degree of customisation, it does require d
 
 The advent of commercial offerings providing Collaboration as a Service is a relatively recent phenomenon.
 
-One of the most popular solutions, released in 2021, is Liveblocks. Whilst not as flexible as the DIY approach, Liveblocks provides a great developer experience, exposing all the components required for adding real-time collaboration to an application through an intuitive client API. This includes a collection of custom CRDT-like data types, autoscaling real-time infrastructure with persistence, and a developer dashboard for easily monitoring usage patterns. However, this convenience comes at a cost, with Liveblocks charging $299 per month for an application with up to 2000 monthly active users (MAU) [ref: valid as of May 2023].
+One of the most popular solutions, released in 2021, is [Liveblocks](https://liveblocks.io/). Whilst not as flexible as the DIY approach, Liveblocks provides a great developer experience, exposing all the components required for adding real-time collaboration to an application through an intuitive client API. This includes a collection of custom CRDT-like data types, autoscaling real-time infrastructure with persistence, and a developer dashboard for easily monitoring usage patterns. However, this convenience comes at a cost, with Liveblocks charging $299 per month for an application with up to 2000 monthly active users (MAU) [ref: valid as of May 2023].
 
-A compelling alternative is Fluid Framework developed by Microsoft. Fluid provides a collection of client libraries that also expose custom CRDT-like distributed data structures. The client libraries connect to an implementation of the Fluid service, a runtime which handles the complexities of propagating updates in real-time and persisting state. Whilst Fluid is open-source, it provides a very limited implementation of the Fluid service by default, capable of handling only 100s of concurrent users. For larger applications, developers are forced to use either the Azure Managed Service or write a custom scaled implementation.
+A compelling alternative is [Fluid Framework](https://fluidframework.com/) developed by Microsoft. Fluid provides a collection of client libraries that also expose custom CRDT-like distributed data structures. The client libraries connect to an implementation of the Fluid service, a runtime which handles the complexities of propagating updates in real-time and persisting state. Whilst Fluid is open-source, it provides a very limited implementation of the Fluid service by default, capable of handling only 100s of concurrent users. For larger applications, developers are forced to use either the Azure Managed Service or write a custom scaled implementation.
 
 ## A Solution for Our Use Case
 
@@ -277,14 +282,14 @@ Following these steps, developers can also enhance existing web applications wit
 To illustrate this, here’s a simple whiteboard application where users can draw lines, shapes, and change colours. In it’s current form, the whiteboard is single-user and non-collaborative.
 
 <div id="singleplayer-demo">
-  <iframe id="singleplayer-demo-iframe" width="100%" height="600" frameborder="0"></iframe>
+  <iframe id="singleplayer-demo-iframe" width="100%" height="600" frameBorder="0"></iframe>
 </div>
 
 To make this whiteboard multiplayer, we modify the whiteboard code to make use of the conflict-free data types provided by the Symphony client. After deploying the application to GCP, user’s can now work together in the same collaborative space and see what others are doing in real-time.
 
-<div id="multiplayer-demo" class="flex justify-between max-w-full mb-3">
-  <iframe id="multiplayer-demo-iframe-1" width="45%" height="600" frameborder="5"></iframe>
-  <iframe id="multiplayer-demo-iframe-2" width="45%" height="600" frameborder="5"></iframe>
+<div id="multiplayer-demo" className="flex justify-between max-w-full mb-3">
+  <iframe id="multiplayer-demo-iframe-1" width="45%" height="600" frameBorder="5"></iframe>
+  <iframe id="multiplayer-demo-iframe-2" width="45%" height="600" frameBorder="5"></iframe>
 </div>
 
 We’ll now turn to how we built Symphony and the technical challenges we faced.
@@ -333,11 +338,11 @@ While we found that the performance and low memory overhead of OT was attractive
 
 For Symphony, we instead decided to use CRDTs as the primary conflict resolution mechanism. Their strong eventual consistency guarantees mean that client changes can be optimistically applied resulting in a faster user experience. In addition, they are highly available and fault-tolerant which means that the users can continue to change state even during network failure or disconnection- the state will simply synchronise with other clients upon reconnection.
 
-Although CRDTs have traditionally suffered from inadequate performance and very large memory overhead, they have become exponentially faster and more memory efficient in recent years, thanks to an active research effort [ref]. To ensure suitable performance, we decided to use an operation-based CRDT, which unlike state-based CRDTs, only propagate operations over the wire instead of the entire state. The tradeoff is that operation-based CRDTs require a reliable network channel which could be easily included given our chosen network topology (see below).
+Although CRDTs have traditionally suffered from inadequate performance and very large memory overhead, they have become exponentially faster and more memory efficient in recent years, thanks to an active research effort.[^9] To ensure suitable performance, we decided to use an operation-based CRDT, which unlike state-based CRDTs, only propagate operations over the wire instead of the entire state. The tradeoff is that operation-based CRDTs require a reliable network channel which could be easily included given our chosen network topology (see below).
 
-For our collection of CRDTs, we chose to use Yjs, a library which provides a collection of generic, operation-based CRDT implementations based on the YATA algorithm. We chose Yjs since it had strong community support, has a very efficient linked-list data model with optimisations such as a garbage collector, making it one of the most memory-efficient and performant implementations, and since it provided defined synchronisation and awareness protocols to propagate across persistent and ephemeral updates across a generic network layer.
+For our collection of CRDTs, we chose to use [Yjs](https://github.com/yjs/yjs), a library which provides a collection of generic, operation-based CRDT implementations based on the YATA algorithm. We chose Yjs since it had strong community support, has a very efficient linked-list data model with optimisations such as a garbage collector, making it one of the most memory-efficient and performant implementations, and since it provided defined synchronisation and awareness protocols to propagate across persistent and ephemeral updates across a generic network layer.
 
-We also considered using Automerge, the other leading open-source offering in this space. Whilst equally performant, it is less mature and was 2x less memory efficient than Yjs in recent benchmarks.
+We also considered using [Automerge](https://automerge.github.io/), the other leading open-source offering in this space. Whilst equally performant, it is less mature and was 2x less memory efficient than Yjs in recent benchmarks.
 
 #### State Change Propagation
 
@@ -363,7 +368,7 @@ We chose to store this data in a Postgres relational database since we have a re
 
 #### Storing Document Data
 
-In line with Yjs best practice [ref], we serialize room documents into a highly compressed binary format. This has the benefit of significantly reducing the amount of storage space required per document, faster data transmission and minimised bandwidth consumption across the network.
+In line with Yjs best practice, we serialize room documents into a highly compressed binary format. This has the benefit of significantly reducing the amount of storage space required per document, faster data transmission and minimised bandwidth consumption across the network.
 
 We initially thought of storing these binary blobs in the Postgres database. However, we realised that this was suboptimal.
 
@@ -390,7 +395,7 @@ The client internally implements additional quality of life improvements for the
 - Providing undo/redo functionality with a History API. This allows undo/redo functionality to be manually paused and resumed.
 - Convenience iterator methods on `SyncedList` including `filter`, `map`, and `find`, allowing it to be used more like a regular JavaScript Array.
 
-The full feature set provided by the Symphony client is described in our API documentation.
+The full feature set provided by the Symphony client is described in our [API documentation](/api/client).
 
 ## Load Testing
 
@@ -413,8 +418,6 @@ To do this, we wrote a program which spawned N separate processes, where each pr
 For the test itself, we selected the following load parameters.
 
 ![Load testing parameters](/img/case-study/load-testing.png)
-
-// need better justification for parameters
 
 A single room server with 1vCPU and 4GB of memory, handling 240 virtual users with 4 users per room, resulting in a total of 60 rooms, propagating one state update per second and 5 presence updates per second, for a period of 30 minutes.
 
@@ -439,8 +442,6 @@ Horizontally scaling the Symphony room server is not trivial. Unlike stateless s
 The first problem is that if a client connected to a given server instance makes an update to document of a particular room on that server, then this update must be propagated to other servers which have that room document in memory; otherwise, the update will not be received by the other servers which have that room document and the state will diverge.
 
 The second problem arises when a client attempts to connect to an already active room. It’s possible that the connecting client may be routed to a server instance which does not have the document in-memory- while the server needs a way of retrieving the most recently updated document from another server.
-
-// a version of document may be present in object storage but this is not the most recent one- need to retrieved the latest version of the document that is currently being edited.
 
 ### Redis Pub/Sub
 
@@ -514,17 +515,17 @@ We now needed a way of efficiently orchestrating room containers.
 
 One solution was to use the AWS-native way of orchestrating containers, namely AWS Elastic Container Service (ECS), as we did in our original architecture. However, we found that this suffered from considerable vendor lock-in and would make supporting multi-cloud deployment difficult in the future. Since many developers may use other cloud providers, this went against our philosophy of integrating into existing developer workflows.
 
-Instead, we chose to use Kubernetes, a open-source container orchestration tool thanks to it’s large community, extensive tooling, and flexibility.
+Instead, we chose to use [Kubernetes](https://kubernetes.io/), a open-source container orchestration tool thanks to it’s large community, extensive tooling, and flexibility.
 
 #### Serverless
 
 Our next decision was whether to run containers in a serverless fashion or to have direct access to the virtual machines hosting the containers. In line with our design philosophy, we wanted to make it as easy as possible for developers to create real-time collaborative web applications without having to manage the underlying infrastructure. Moreover, we wanted our solution to be cost effective. Given these requirements, we chose a serverless model, where usage-based billing model i.e. per K8s pod is employed- this means that a developer will only be charged for the number of active rooms.
 
-For hosting the cluster, we initially turned to AWS Elastic Kubernetes Service (EKS) with Fargate. However, we found a number of drawbacks to it. The most significant drawback is that EKS does not provide a fully managed option- while automated cluster creation tools such as `eksctl` give the illusion of a fully-managed service, it simple auto generates the required resources and does not abstract away their existence. This means that the developer is still implicitly responsible for maintaining them and may mistakenly modify the cluster configuration.
+For hosting the cluster, we initially turned to [AWS Elastic Kubernetes Service (EKS) with Fargate](https://aws.amazon.com/eks/). However, we found a number of drawbacks to it. The most significant drawback is that EKS does not provide a fully managed option- while automated cluster creation tools such as `eksctl` give the illusion of a fully-managed service, it simple auto generates the required resources and does not abstract away their existence. This means that the developer is still implicitly responsible for maintaining them and may mistakenly modify the cluster configuration.
 
 EKS also has less flexibility than other solutions. For example, EKS insists that namespaces that require Fargate compute profiles must be specified before cluster creation.  If namespaces are modified in the future, it means the infrastructure configuration also needs to be changed and the cluster recreated. Thirdly, upgrading EKS clusters can be difficult- to upgrade Kubernetes version, service pods needs to be deleted so that the underlying node is destroyed and a new one with the correct Kubernetes version is created. The lack of zero-downtime upgrades adds further burden on developers.
 
-Instead, we found that a better solution for our Kubernetes deployment was Google Kubernetes Engine (GKE) Autopilot. GKE Autopilot provides faster cluster creation, global serverless compute across all namespaces by default, and abstracts away all the underlying components such as provisioning node pools etc. from the developer, providing a cleaner developer experience.
+Instead, we found that a better solution for our Kubernetes deployment was [Google Kubernetes Engine (GKE) Autopilot](https://cloud.google.com/kubernetes-engine/docs/concepts/autopilot-overview). GKE Autopilot provides faster cluster creation, global serverless compute across all namespaces by default, and abstracts away all the underlying components such as provisioning node pools etc. from the developer, providing a cleaner developer experience.
 
 #### Proxying Requests
 
@@ -575,11 +576,14 @@ As a final touch, we created an intuitive developer dashboard UI which provides 
 
 When clients attempt to connect to a room which does not exist, the proxy must wait for the K8s scheduler to match a pod to a node and the node kubelet to run it before proxying can begin.
 
-In certain cases, we noticed that when room deployment took as long as 2 minutes. This was surprising since K8s guarantees that “99% of pods (with pre-pulled images) start within 5 seconds” [^5]. After some investigation, we realised that the delay was introduced when the K8s scheduler has no available node to schedule the pod on. This resulted in a lengthy autoscaling operation until a new node was provisioned.
+In certain cases, we noticed that when room deployment took as long as 2 minutes. This was surprising since K8s guarantees that “99% of pods (with pre-pulled images) start within 5 seconds” [^10]. After some investigation, we realised that the delay was introduced when the K8s scheduler has no available node to schedule the pod on. This resulted in a lengthy autoscaling operation until a new node was provisioned.
 
-To mitigate this, we provisioned spare capacity using balloon pods [^6]. A balloon pod is a low priority (defined using a K8s `PriorityClass` resource) pod, which reserves extra node capacity. When a room is scheduled, the balloon pod is evicted so that the room can immediately start booting. The balloon pod is also then re-scheduled continuing to reserve capacity for the next room pod.
+To mitigate this, we provisioned spare capacity using balloon pods [^11]. A balloon pod is a low priority (defined using a K8s `PriorityClass` resource) pod, which reserves extra node capacity. When a room is scheduled, the balloon pod is evicted so that the room can immediately start booting. The balloon pod is also then re-scheduled continuing to reserve capacity for the next room pod.
 
-![Balloon Pods](/img/case-study/balloon-pods.png)
+<figure className="mb-5 text-center">
+  <img src="/img/case-study/balloon-pods.png" alt="balloon pods" />
+  <figcaption className="italic">Image from <a href="https://wdenniss.com/gke-autopilot-spare-capacity">William Denniss</a></figcaption>
+</figure>
 
 This reduced pod-startup times by 10x. Whilst this solution eliminated the problem of prolonged cold-start times, it is more expensive and the ‘always-on’ balloon pods reduces the benefit of a serverless compute layer. To minimise this disadvantage, we provision only 3 balloon pods by default, where the size of each balloon pod is equal to the size of the smallest room pod.
 
@@ -606,8 +610,17 @@ Going forward, there are additional features that we think would enhance Symphon
 
 ## References
 
-[^5]: https://kubernetes.io/blog/2015/09/kubernetes-performance-measurements-and/#:~:text=“Pod
-[^6]: https://wdenniss.com/gke-autopilot-spare-capacity
+[^1]: https://en.wikipedia.org/wiki/The_Mother_of_All_Demos
+[^2]: https://erikbern.com/2017/07/06/optimizing-for-iteration-speed.html
+[^3]: https://webrtc.org/
+[^4]: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
+[^5]: https://svn.apache.org/repos/asf/incubator/wave/whitepapers/operational-transform/operational-transform.html
+[^6]: https://crdt.tech/
+[^7]: https://arxiv.org/pdf/1805.06358
+[^8]: https://www.figma.com/blog/how-figmas-multiplayer-technology-works
+[^9]: https://www.bartoszsypytkowski.com/crdt-optimizations/
+[^10]: https://kubernetes.io/blog/2015/09/kubernetes-performance-measurements-and/#:~:text=“Pod
+[^11]: https://wdenniss.com/gke-autopilot-spare-capacity
 
 
 
