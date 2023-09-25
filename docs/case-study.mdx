@@ -51,9 +51,9 @@ When a user makes a change to the client state, the change is propagated to the 
 
 ![Three-tier Architecture](/img/case-study/three-tier.png)
 
-This architecture is fine for applications that are designed to be used by only one user at a time, this architecture is fine. However, for applications that seek to provide a multiplayer experience, the stateless nature of HTTP is problematic.
+This architecture is fine for applications that are designed to be used by only one user at a time. However, for applications that seek to provide a multiplayer experience, the stateless nature of HTTP is problematic.
 
-Since each state change by a given client is scoped to the request-response cycle, other user’s who wish to view the change must first request the data from the server, usually by refreshing the page.
+Since each state change by a given client is scoped to the request-response cycle, other users who wish to view the change must first request the data from the server, usually by refreshing the page.
 
 In situations where multiple users are frequently modifying the same state, the need for each client to constantly send requests can quickly become burdensome and inefficient.
 
@@ -71,9 +71,11 @@ Web Real-Time Communication (WebRTC) is an open-source technology that enables r
 
 WebSocket is a web protocol that provides a persistent, bi-directional communication channel between a client and a server over a single, long-lived TCP connection.[^4] The connection is established via a handshake between client and server. Since TCP is used as the primary transport protocol, WebSocket is a suitable choice for collaborative applications that require stronger guarantees on the reliability and security of the communication channel at the expense of higher latency, such as real-time dashboards, stock price tickers, and live chat.
 
-Using technologies such as WebRTC and WebSocket, clients and/or servers are able to maintain persistent, stateful communication channels, no longer bound by the limits of the request-response cycle. As such, it permitted the development of so-called real-time applications to be built, where state updates are *perceived* to be received instantaneously without page refresh.
+Using technologies such as WebRTC and WebSocket, clients and/or servers are able to maintain persistent, stateful communication channels, no longer bound by the limits of the request-response cycle. As such, it permitted the development of so-called real-time applications to be built, where state updates are perceived to be received instantaneously without page refresh.
 
-Whilst it may initially seem that the addition of real-time solves the collaboration problem since multiple users can now see changes immediately, this is not the case.
+It may initially seem that the addition of real-time solves the collaboration problem since multiple users can now see changes immediately.
+
+This is not the case.
 
 The problem is that many real-time applications such as chat applications have the implicit constraint that each piece of state can only have a single mutable reference to it. In other words, the same piece of state cannot be modified concurrently by multiple users. For example, in a chat application, a given message is owned by a single user and they alone can edit it at any given time.
 
@@ -83,7 +85,7 @@ The possibility of conflict radically increases the complexity of implementing c
 
 ### Conflict
 
-In the context of real-time collaborative applications, conflict refers to a situation where two or more users attempt to modify the same piece of state, without knowledge of one another (concurrently), resulting in conflict versions of that data.
+In the context of real-time collaborative applications, conflict refers to a situation where two or more users attempt to modify the same piece of state, without knowledge of one another (concurrently), resulting in conflicting versions of that data.
 
 For example, multiple users working on a shared task or document may make changes to the same part of the document at the same time. Alternatively, network delays could cause state to diverge between different users which must be reconciled.
 
@@ -112,7 +114,7 @@ For a collaborative application, we need a method of reconciling such conflicts 
   <figcaption className="italic">The role of a conflict resolution mechanism is to merge branches in a deterministic way, until all branches have converged to a single, consistent state that all parties agree upon.</figcaption>
 </figure>
 
-In other words, after applying all user state changes, the application should deterministically converge to an eventually consistent state across the whole system that all parties agree upon.
+In other words, after applying all state changes, the application should deterministically converge to an eventually consistent state across the whole system that all parties agree upon.
 
 ### Methods of Conflict Resolution & Maintaining Distributed Consistency
 
@@ -153,7 +155,7 @@ This sentiment is widely shared by practitioners in the field, as highlighted by
 > Unfortunately, implementing OT sucks. There's a million algorithms with different tradeoffs, mostly trapped in academic papers. […] Wave took 2 years to write and if we rewrote it today, it would take almost as long to write a second time.
 >
 
-In fact, 4 out of 8 different implementations of OT from the original 1989 paper to 2006 were found to be incorrect, missing subtle edge cases. The consequence of this incorrectness was that client state would irrevocably diverge, with no way to return to a consistent state [ref: CRDTS the hard parts].
+In fact, 4 out of 8 different implementations of OT from the original 1989 paper to 2006 were found to be incorrect, missing subtle edge cases. The consequence of this incorrectness was that client state would irrevocably diverge, with no way to return to a consistent state.
 
 The complexity of OT led researchers to find alternatives, the most promising of which are conflict-free replicated data types, or CRDTs.
 
@@ -162,9 +164,9 @@ The complexity of OT led researchers to find alternatives, the most promising of
 A conflict-free replicated data type (CRDT) is an abstract data type designed to be replicated at multiple processes.[^6] By definition, CRDTs have the following properties:
 
 - **Independent-** Any replica can be modified without coordinating with other replicas.
-- **Strongly eventually consistent-** When any two replicas have received the same set of updates (in any order), the mathematical properties of CRDTs guarantee that both replicas will deterministically converge to the same state [footnote- explain what these mathematical properties are].
+- **Strongly eventually consistent-** When any two replicas have received the same set of updates (in any order), the mathematical properties of CRDTs guarantee that both replicas will deterministically converge to the same state.
 
-By imposing these mathematical properties on the CRDT and it’s associated algorithms, clients can optimistically update their own state locally and broadcast their updates to all other remote, state replicas [footnote explain difference between state and operation based]. Since CRDTs are strongly eventually consistent, upon a given remote replica receiving all updates, the remote replica is guaranteed to converge to the same state as the local replica without conflict.
+By imposing these mathematical properties on the CRDT and it’s associated algorithms, clients can optimistically update their own state locally and broadcast their updates to all other remote, state replicas. Since CRDTs are strongly eventually consistent, upon a given remote replica receiving all updates, the remote replica is guaranteed to converge to the same state as the local replica without conflict.
 
 The advantage of CRDTs is that they are guaranteed to be conflict-free, as long as the required mathematical properties are imposed. Since these mathematical properties are well-defined, it is easier to prove the correctness of a CRDT than any corresponding OT implementation. Further, since each replica is independent and that CRDTs make no assumption about the network topology, CRDTS are partition tolerant by default and can be used in a variety of network topologies including client-server and P2P. This property also means they are offline-capable by default.
 
@@ -181,7 +183,7 @@ While recent research has sought to introduce garbage-collection methods to redu
 
 Whilst OT and CRDTs represent the most popular approaches to conflict-resolution, the complexity of OT and the memory overhead of CRDTs can sometimes be unacceptable for certain use-cases. As such, some choose to create custom, proprietary data models that are inspired by the OT and CRDT approaches and are highly specialised to a particular use-case.
 
-For example, Figma relax many of the constraints imposed by CRDTs by adopting much simpler conflict-resolution semantics. In particular, they use simple last-write wins semantics when two clients try to modify a value of a Figma object concurrently. This works great for Figma objects where changes are mutually exclusive i.e. a single value must be chosen, but would fail if used for text editing. In Figma’s case, this was a valid tradeoff for their use case but would not be a suitable model for other applications.[^8]
+For example, Figma relax many of the constraints imposed by CRDTs by adopting much simpler conflict-resolution semantics. In particular, they use simple last-write wins (LWW) semantics when two clients try to modify a value of a Figma object concurrently. This works great for Figma objects where changes are mutually exclusive i.e. a single value must be chosen, but would fail if used for text editing. In Figma’s case, this was a valid tradeoff for their use case but would not be a suitable model for other applications.[^8]
 
 The advantage of implementing a custom conflict-free data model is that the mechanism can be made highly-specialised to the target use-case. This can mean that many of the constraints that come with OT and CRDTs can be relaxed which may result in a simpler and efficient data representation. However, developing a custom model can be potentially risky since it requires a number of assumptions to be made about the use-case. In Figma’s case, for example, introducing text-editing may require significant changes to their current conflict-resolution semantics.
 
@@ -203,7 +205,11 @@ Answering these questions influences the suitability of each conflict resolution
 
 ## Manually Building a Real-time Collaborative Application
 
-Building a collaborative application from scratch can be time-consuming and difficult, particularly when dealing with the intricacies of real-time infrastructure and conflict-resolution mechanisms. It means that creating rich, collaborative experiences on the web has traditionally only been open to companies with the human and financial resources to roll their own solutions. For smaller teams of modest means, who may lack familiarity with these specialised topics, implementing such systems has remained out of reach. Provided below is a sample list of tasks involved in creating a production-ready real-time collaborative web application:
+Building a collaborative application from scratch can be time-consuming and difficult, particularly when dealing with the intricacies of real-time infrastructure and conflict-resolution mechanisms. It means that creating rich, collaborative experiences on the web has traditionally only been open to companies with the human and financial resources to roll their own solutions.
+
+For smaller teams of modest means, who may lack familiarity with these specialised topics, implementing such systems has remained out of reach.
+
+Provided below is a sample list of tasks involved in creating a production-ready real-time collaborative web application:
 
 ![Manually building collaborative application](/img/case-study/manual.png)
 
@@ -225,9 +231,9 @@ Whilst the DIY approach offers a high degree of customisation, it does require d
 
 #### Commercial Solutions
 
-The advent of commercial offerings providing Collaboration as a Service is a relatively recent phenomenon.
+The advent of commercial offerings providing Collaboration-as-a-Service is a relatively recent phenomenon.
 
-One of the most popular solutions, released in 2021, is [Liveblocks](https://liveblocks.io/). Whilst not as flexible as the DIY approach, Liveblocks provides a great developer experience, exposing all the components required for adding real-time collaboration to an application through an intuitive client API. This includes a collection of custom CRDT-like data types, autoscaling real-time infrastructure with persistence, and a developer dashboard for easily monitoring usage patterns. However, this convenience comes at a cost, with Liveblocks charging $299 per month for an application with up to 2000 monthly active users (MAU) [ref: valid as of May 2023].
+One of the most popular solutions, released in 2021, is [Liveblocks](https://liveblocks.io/). Whilst not as flexible as the DIY approach, Liveblocks provides a great developer experience, exposing all the components required for adding real-time collaboration to an application through an intuitive client API. This includes a collection of custom CRDT-like data types, autoscaling real-time infrastructure with persistence, and a developer dashboard for easily monitoring usage patterns. However, this convenience comes at a cost, with Liveblocks charging $299 per month for an application with up to 2000 monthly active users (MAU), valid as of September 2023.
 
 A compelling alternative is [Fluid Framework](https://fluidframework.com/) developed by Microsoft. Fluid provides a collection of client libraries that also expose custom CRDT-like distributed data structures. The client libraries connect to an implementation of the Fluid service, a runtime which handles the complexities of propagating updates in real-time and persisting state. Whilst Fluid is open-source, it provides a very limited implementation of the Fluid service by default, capable of handling only 100s of concurrent users. For larger applications, developers are forced to use either the Azure Managed Service or write a custom scaled implementation.
 
@@ -258,7 +264,9 @@ The availability of an open-source tool which handles the complexities of implem
 
 ### Overview
 
-Symphony is an open-source framework designed to make it easy for developers to add collaborative functionality to their applications. It comes with a client library that provides an intuitive API to a collection of conflict-free data types that are composed to construct a distributed data model. Symphony automatically provisions the required network infrastructure to propagate state changes to all collaborating clients in real-time and persist state between users sessions. It also provides real-time application- and system-level monitoring via a developer dashboard that exposes pertinent metrics including the number of active users, the size of persisted state (bytes), and the CPU/memory usage of each collaborative session.
+Symphony is an open-source runtime designed to make it easy for developers to add collaborative functionality to their applications.
+
+It comes with a client library that provides an intuitive API to a collection of conflict-free data types that are composed to construct a distributed data model. Symphony automatically provisions the required network infrastructure to propagate state changes to all collaborating clients in real-time and persist state between users sessions. It also provides real-time application- and system-level monitoring via a developer dashboard that exposes pertinent metrics including the number of active users, the size of persisted state (bytes), and the CPU/memory usage of each collaborative session.
 
 ### Using Symphony
 
@@ -268,9 +276,9 @@ After installing the required dependencies stated in the documentation, and glob
 
 1. Run `symphony compose <projectName>`. This command creates a new `projectName` directory, initializes a new Node project with the required `package.json`, and scaffolds some initial starter files including the Symphony configuration file, `symphony.config.js`.
 2. Write and deploy the front-end client code by composing the collection of conflict-free data types provided by the Symphony client.
-3. Run `symphony deploy <domainName>`, which deploys the application on Google Cloud Platform (GCP). After provisioning is complete, developer’s can run `symphony dashboard` to view the developer monitoring dashboard.
+3. Run `symphony deploy <domainName>`, which deploys the application on Google Cloud Platform (GCP). After provisioning is complete, developers can run `symphony dashboard` to view the developer monitoring dashboard.
 
-Following these steps, developers can also enhance existing web applications with collaborative functionality using Symphony.
+Following these steps, developers can enhance existing their web applications with collaborative functionality using Symphony.
 
 To illustrate this, here’s a simple whiteboard application where users can draw lines, shapes, and change colours. In it’s current form, the whiteboard is single-user and non-collaborative.
 
@@ -295,9 +303,9 @@ We’ll being by outlining the fundamental requirements we had to address and a 
 
 In order to express the system requirements accurately, we introduce some useful terminology:
 
-- Document- refers to the shared state that clients modify during a session.
-- Room- a collaboration session in which one or more clients connect to in order to modify the room document. A given room has a single document i.e. shared state that clients modify.
-- Presence- represents the ephemeral state of a room which defines user’s movements and actions inside a room including cursor positions, user avatars, online/offline indicators, or any other visual representation that reflects the real-time activity or availability of users within the collaborative session.
+- **Document-** refers to the shared state that clients modify during a session.
+- **Room-** a collaboration session in which one or more clients connect to in order to modify the room document. A given room has a single document i.e. shared state that clients modify.
+- **Presence-** represents the ephemeral state of a room which defines user’s movements and actions inside a room including cursor positions, user avatars, online/offline indicators, or any other visual representation that reflects the real-time activity or availability of users within the collaborative session.
 
 #### Fundamental Requirements
 
@@ -315,7 +323,7 @@ Symphony is designed with the principle that developers should be able to includ
 
 After some initial prototyping, we arrived at the following high-level flow on how a collaboration session involving multiple users starts, progresses and terminates.
 
-A client connects to a server via WebSocket. The clients specifies the room to connect to by specifying the room id in the URL path. The server extracts the room id and queries the database to check if a room with that id already exists. If the id exists i.e. the room has been used before, the server retrieves the associated room document from storage and loads it into memory; otherwise, a new document is created in memory and a new room record created in the database.
+A client connects to a server via WebSocket. The clients specifies the room to connect to by specifying the room ID in the URL path. The server extracts the room ID and queries the database to check if a room with that id already exists. If the id exists i.e. the room has been used before, the server retrieves the associated room document from storage and loads it into memory; otherwise, a new document is created in memory and a new room record created in the database.
 
 Additional clients can connect to the active room and modify the state. Each update is propagated to the server which in turn updates the document state in memory and broadcasts it to all the other collaborating clients. Upon receiving updates, clients update their local state. When the last remaining client disconnects from the room, the document is serialized and written to storage. The document and room metadata is subsequently purged from memory, and the room is marked as closed in the database.
 
@@ -333,7 +341,7 @@ For Symphony, we instead decided to use CRDTs as the primary conflict resolution
 
 Although CRDTs have traditionally suffered from inadequate performance and very large memory overhead, they have become exponentially faster and more memory efficient in recent years, thanks to an active research effort.[^9] To ensure suitable performance, we decided to use an operation-based CRDT, which unlike state-based CRDTs, only propagate operations over the wire instead of the entire state. The tradeoff is that operation-based CRDTs require a reliable network channel which could be easily included given our chosen network topology (see below).
 
-For our collection of CRDTs, we chose to use [Yjs](https://github.com/yjs/yjs), a library which provides a collection of generic, operation-based CRDT implementations based on the YATA algorithm. We chose Yjs since it had strong community support, has a very efficient linked-list data model with optimisations such as a garbage collector, making it one of the most memory-efficient and performant implementations, and since it provided defined synchronisation and awareness protocols to propagate across persistent and ephemeral updates across a generic network layer.
+For our collection of CRDTs, we chose to use [Yjs](https://github.com/yjs/yjs), a library which provides a collection of generic, operation-based CRDT implementations based on the YATA algorithm. We chose Yjs since it had strong community support, has a very efficient linked-list data model with optimisations such as a garbage collector, making it one of the most memory-efficient and performant implementations. It also provided defined synchronisation and awareness protocols to propagate across persistent and ephemeral updates across a generic network layer.
 
 We also considered using [Automerge](https://automerge.github.io/), the other leading open-source offering in this space. Whilst equally performant, it is less mature and was 2x less memory efficient than Yjs in recent benchmarks.
 
@@ -341,13 +349,13 @@ We also considered using [Automerge](https://automerge.github.io/), the other le
 
 Since we now have a collection of conflict-free data types that can be used to construct a distributed data model, we need to consider how to propagate state updates to all collaborating clients in real-time.
 
-Since CRDTs have strong eventual consistency, they can theoretically support any network layer capable of propagating updates from one replica to another. However, since our use-case is for web applications, we can only use technologies supported by modern browsers- the two primary choices being WebSocket and WebRTC.
+CRDTs have strong eventual consistency, they can theoretically support any network layer capable of propagating updates from one replica to another. Given our use-case is for web applications, we are constrained to technologies supported by modern browsers- the two primary choices being WebSocket and WebRTC.
 
-WebRTC is primarily used in peer-to-peer (P2P) topologies. Whilst WebRTC is scalable and minimises infrastructure requirements since it does not require the use of a central server, it has lacks suitability for our use case.
+WebRTC is primarily used in peer-to-peer (P2P) topologies. Whilst WebRTC is scalable and minimises infrastructure requirements since it does not require the use of a central server, it lacks suitability for our use case.
 
 Firstly, the majority of modern web applications already use a centralised client-server model. Companies want to retain control of data and enforce security measures such as authentication across all users, which is difficult in a P2P topology. Additionally, traversing firewalls and Network Address Translation (NAT) devices is not trivial with WebRTC- a consequence of this is that the applications will fail to propagate updates in geographies with national firewalls e.g. China.
 
-As a result of these limitations, we chose WebSocket as the underlying protocol for our real-time infrastructure. Their support for the client-server model and stability across all major browsers and basis made them a natural choice for us. Since WebSocket provides a bidirectional communication channel over TCP, the reliable network channel required for operation-based CRDTs is inherently provided.
+As a result of these limitations, we chose WebSocket as the underlying protocol for our real-time infrastructure. It's support for the client-server model and stability across all major browsers made it a natural choice for us. Since WebSocket provides a bidirectional communication channel over TCP, the reliable network channel required for operation-based CRDTs is inherently provided.
 
 #### Persisting Room Data
 
@@ -365,11 +373,13 @@ In line with Yjs best practice, we serialize room documents into a highly compre
 
 We initially thought of storing these binary blobs in the Postgres database. However, we realised that this was suboptimal.
 
-Firstly, document sizes can become very large, particularly after lengthy collaboration sessions which can result in a large amount of accumulated CRDT metadata. Storing these documents in Postgres would affect the scalability of the database. Secondly, Postgres is not optimized for large scale writes- the number of writes scales linearly with the number of rooms and can become particularly problematics if large documents are saved multiple times during a collaborative session. Implementing other useful features such as document versioning also becomes tricky.
+Firstly, document sizes can become very large, particularly after lengthy collaboration sessions which can result in a large amount of accumulated CRDT metadata. Storing these documents in Postgres would affect the scalability of the database.
+
+Secondly, Postgres is not optimized for large scale writes- the number of writes scales linearly with the number of rooms and can become particularly problematics if large documents are saved multiple times during a collaborative session. Implementing other useful features such as document versioning also becomes tricky.
 
 One potential solution is to use a NoSQL database like AWS DynamoDB. However, these often have limits on the size of a single database item (DynamoDB has a 400kb limit), which is impractical for use cases like ours where document size can potentially be unbounded.
 
-Considering these limitations, we decided to store documents in object storage, namely AWS Simple Storage Service (S3). Object storage is highly scalable, optimized to handle large amounts of unstructured data making it ideal for persisting schemaless room documents. It’s also cheaper than alternative NoSQL solutions like DynamoDB and supports large-scale read and write operations, making it suitable for scenarios where there is a large number of concurrent rooms and documents needs to be ingested and retrieved at high volumes. Further, our use case only requires documents to be persisted as atomic binary blobs- we do not need to query *within* a document making object storage more suitable than a NoSQL database [ref Sam Broner].
+Considering these limitations, we decided to store documents in object storage, namely AWS Simple Storage Service (S3). Object storage is highly scalable, optimized to handle large amounts of unstructured data making it ideal for persisting schemaless room documents. It’s also cheaper than alternative NoSQL solutions like DynamoDB and supports large-scale read and write operations, making it suitable for scenarios where there is a large number of concurrent rooms and documents needs to be ingested and retrieved at high volumes. Further, our use case only requires documents to be persisted as atomic binary blobs- we do not need to query *within* a document making object storage more suitable than a NoSQL database.
 
 Integrating Postgres and S3 object storage, we are now able to persist room data between collaboration sessions. When a user connects to a room, we query Postgres to determine if an existing room exists. If it does, we can retrieve the associated document from S3 and load it into memory for editing; otherwise we create a new Room record and initalize an empty document. After the last user leaves the room, we serialize the in-memory document, store it in object storage and purge the document from server memory, returning memory resource to the system.
 
@@ -398,7 +408,7 @@ However, the current architecture is limited.
 
 The responsibility for creating, maintaining and updating state in memory for all rooms, handling user WebSocket connections, and serializing/deserializing state all fall to a single server.  In other words, the system has a single point of failure.
 
-Also, since the single server is responsible for handling all collaborative sessions and supporting the additional memory overhead resulting from our use of CRDTs, we hypothesised that whilst this architecture is suitable for a small number of rooms, it would not suffice in real-world applications that would typically have thousands of concurrent users [ref typical app user count e.g. miro].
+Also, since the single server is responsible for handling all collaborative sessions and supporting the additional memory overhead resulting from our use of CRDTs, we hypothesised that whilst this architecture is suitable for a small number of rooms, it would not suffice in real-world applications that would typically have thousands of concurrent users.
 
 To empirically verify this, we turned to load testing the system. This would also allow us to determine the system’s service level objectives (SLOs) including the concurrent user limit and identify potential bottlenecks such as compute or memory, which would later inform our scaling strategy.
 
@@ -468,7 +478,7 @@ These findings led us to rethink the suitability of our current architecture for
 
 ## A Better Scaling Solution
 
-Upon reflection, there are two primary problems with the pub-sub architecture.
+Upon reflection, there are two primary problems with the Pub-Sub architecture.
 
 The first is that there is unnecessary duplication of documents across multiple server instances. The second is that the Redis node constitutes a single point of failure.
 
@@ -492,7 +502,9 @@ We arrived at the following high-level architecture.
 
 ![Architecture overview](/img/case-study/architecture-overview.png)
 
-A client sends a request to connect to a room via WebSocket. As before, the client specifies the room to connect to by specifying the room id in the URL path. The request is intercepted by a proxy server. The proxy server extracts the room id and queries a database to check if a room process with that id is active. If there isn’t, the server requests a process, uniquely identified by room id to be started. Once a process with the requested id is running and ready to accept requests, a key-value record mapping the room id to the IP address of the process is added to the database and the server proxies the client request to the relevant process and the standard collaboration session, described in Section 1 can begin. When the last remaining client disconnects from the room, the process waits for a predefined grace period after which the process is terminated. The corresponding process record is removed from the database.
+A client sends a request to connect to a room via WebSocket. As before, the client specifies the room to connect to by specifying the room ID in the URL path. The request is intercepted by a proxy server. The proxy server extracts the room ID and queries a database to check if a room process with that id is active. If there isn’t, the server requests a process, uniquely identified by room ID to be started. Once a process with the requested ID is running and ready to accept requests, a key-value record mapping the room ID to the IP address of the process is added to the database and the server proxies the client request to the relevant process and the standard collaboration session, described in Section 1 can begin.
+
+When the last remaining client disconnects from the room, the process waits for a predefined grace period after which the process is terminated. The corresponding process record is removed from the database.
 
 With an overall direction in mind, we then explored different options for each component of our core architecture.
 
@@ -527,7 +539,7 @@ When a client request to connect to a particular room is received via the Kubern
 - Find or create the requested room service
 - Proxy the request to the requested room service
 
-To satisfy the first requirement, we query etcd to check if a service with name corresponding to the room id exists. If it doesn’t, we send a request to the K8s API server to create a new room deployment where the service name is the room id. We then poll service endpoints in etcd until the service is marked as ready. In this case, polling was justified over a more complex mechanism such as using Kubernetes Watch since pods typically spin up within a few seconds so polling does not add much additional load. Each service has been configured with K8s readiness and liveness probes to ensure that it is not prematurely added to the list of available service endpoints and marked as healthy before the room server is ready to accept requests.
+To satisfy the first requirement, we query etcd to check if a service with name corresponding to the room ID exists. If it doesn’t, we send a request to the K8s API server to create a new room deployment where the service name is the room id. We then poll service endpoints in etcd until the service is marked as ready. In this case, polling was justified over a more complex mechanism such as using Kubernetes Watch since pods typically spin up within a few seconds so polling does not add much additional load. Each service has been configured with K8s readiness and liveness probes to ensure that it is not prematurely added to the list of available service endpoints and marked as healthy before the room server is ready to accept requests.
 
 As implied by the above, we decided to use etcd as the source of truth on the existence and status of services instead of keeping a service registry cached locally- this ensures the proxy services remains stateless. Since etcd is strongly consistent, it is guaranteed to represent the true state of the system when queried. By keeping the proxy service stateless, we can horizontally scale by simply adding additional replicas without having to worry about state synchronisation. Whilst this does introduce additional latency since we need to make network calls to etcd, we decided this was a valid tradeoff as having a stateful service would radically increase complexity.
 
